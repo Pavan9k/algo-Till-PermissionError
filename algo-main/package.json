@@ -1,0 +1,12 @@
+  {
+    "name": "zerodha-test-app",
+    "private": true,
+    "scripts": {
+      "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+      "start:backend": "npm --prefix backend start",
+      "start:frontend": "npm --prefix client run dev"
+    },
+    "devDependencies": {
+      "concurrently": "^8.2.2"
+    }
+  }
