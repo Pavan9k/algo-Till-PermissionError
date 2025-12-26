@@ -26,74 +26,62 @@
 // }
 
 
-
-
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { getHistoricalData } from "./api";
+import {  getStatus } from "./api";
+import { formatKiteDate } from "../utils";
 
 export default function LiveTable() {
-  const [candles, setCandles] = useState([]); // historical + live merged
+  const [ticks, setTicks] = useState([]);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
     // ---------------- FETCH HISTORICAL ----------------
-   const fetchHistorical = async () => {
-  try {
-    const res = await getHistoricalData(
-      5633,                      // instrumentToken
-      "day",                     // interval
-      "2025-01-01 09:15:00",     // from
-      "2025-12-01 15:30:00"      // to
-    );
-
-    setCandles(res.data.candles || []);
-  } catch (err) {
-    console.error("Error fetching historical:", err.response?.data || err.message);
-  }
-};
+ 
 
 
-    fetchHistorical();
+    // ---------------- POLL STATUS ----------------
+    // const statusInterval = setInterval(async () => {
+    //   try {
+    //     const res = await getStatus();
+    //     setStatus(res.data);
+    //     console.log("Status:", res.data);
+    //   } catch (err) {
+    //     console.error("Error fetching status:", err.response?.data || err.message);
+    //   }
+    // }, 5000); // Fixed: 5000ms = 5 seconds (was 500000)
 
-    // ---------------- SOCKET.IO ----------------
+    // ---------------- LIVE TICKS ----------------
     const socket = io("http://localhost:5000");
 
-    socket.on("connect", () => {
-      console.log("🟢 Socket connected");
-    });
+    socket.on("connect", () => console.log("🟢 Socket connected"));
 
-    socket.on("ticks", (ticks) => {
-      setCandles((prev) => {
-        const updated = [...prev];
+    let lastUpdate = 0;
+    const throttleMs = 200;
 
-        ticks.forEach((tick) => {
-          const lastCandle = updated[updated.length - 1];
+    // socket.on("ticks", (incomingTicks) => {
+    //   const now = Date.now();
+    //   if (now - lastUpdate < throttleMs) return;
+    //   lastUpdate = now;
 
-          if (!lastCandle) return;
+    //   setTicks(incomingTicks);
+    // });
 
-          const [time, open, high, low, close, volume] = lastCandle;
-
-          // Merge tick into last candle (simple example)
-          if (tick.last_price > high) lastCandle[2] = tick.last_price;
-          if (tick.last_price < low) lastCandle[3] = tick.last_price;
-          lastCandle[4] = tick.last_price; // close
-          lastCandle[5] += tick.volume;    // add volume
-        });
-
-        return updated;
-      });
-    });
-
+    // ---------------- CLEANUP ----------------
     return () => {
       socket.disconnect();
-      console.log("🔴 Socket disconnected");
+      clearInterval(statusInterval);
+      console.log("🔴 Socket disconnected, status polling stopped");
     };
   }, []);
 
   return (
-    <pre style={{ fontSize: 12 }}>
-      {JSON.stringify(candles, null, 2)}
-    </pre>
+    <div>
+      <h3>Live Ticks:</h3>
+      {/* <pre style={{ fontSize: 12 }}>{JSON.stringify(ticks, null, 2)}</pre> */}
+
+      <h3>Status:</h3>
+      <pre style={{ fontSize: 12 }}>{JSON.stringify(status, null, 2)}</pre>
+    </div>
   );
 }
- 

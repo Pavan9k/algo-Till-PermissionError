@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { getProfile } from "./api";
 import StatusBadge from "./StatusBadge";
 import LiveTable from "./LiveTable";
+import HistoricalDataViewer from "./HistoricalDataViewer";
+import InstrumentTable from "./InstrumentTable";
+import HistoricalDataTable from "./HistoricalTableData";
 
 export default function App() {
   const [profile, setProfile] = useState(null);
@@ -34,8 +37,11 @@ export default function App() {
             Welcome, <b>{profile.user_shortname}</b>
             <StatusBadge />
           </div>
+          {/* <InstrumentTable /> */}
 
-          <LiveTable />
+          {/* <LiveTable /> */}
+          <HistoricalDataViewer />
+          <HistoricalDataTable instrumentToken={16806658} />
         </>
       )}
     </div>

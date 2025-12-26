@@ -28,13 +28,13 @@ export const authRoutes = (startTicker) => {
       saveToken(session.access_token);
       startTicker(session.access_token);
 
-      // ✅ SUCCESS → go back to frontend
+      //  SUCCESS → go back to frontend
       return res.redirect("http://localhost:5173/");
     } catch (err) {
       console.error("❌ Zerodha login failed");
       console.error(err);
 
-      // ❌ NEVER send the error object
+      //  NEVER send the error object
       return res
         .status(500)
         .send("Zerodha login failed. Check backend logs.");
